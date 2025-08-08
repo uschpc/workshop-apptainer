@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Software Containers with Apptainer</title>
+    <meta charset="utf-8">
+    <meta name="author" content="Center for Advanced Research Computing at University of Southern California" />
+    <link rel="stylesheet" href="main.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+
+class: center, top, title-slide
+
+# Software Containers with Apptainer
+
+<img src="apptainer-logo.png" height="200" />
+
+### Center for Advanced Research Computing <br> University of Southern California <br>
+
+#### Last updated on 2025-08-08
+
+---
+
+## Outline
+
+1. Overview of software containers
+2. Downloading existing container images
+3. Running containers
+4. Building custom container images
+5. Inspecting container images
+6. Other features
+7. Resources and support
+8. Exercises
+
+---
+
+class: center, middle, inverse
+
+## Section 1
+
+### Overview of software containers
+
+---
+
+## Key terms and definitions
+
+- **container image**
+    - executable file encapsulating a software environment (immutable blueprint)
+- **container**
+    - running instance of a container image
+- **container engine**
+    - application that builds and runs container images
+- **host system**
+    - operating system that runs the container engine
+- **container registry**
+    - catalog of container images (download/upload)
+- **definition file**
+    - build recipe for a container image
+
+---
+
+## What is a software container?
+
+- A software environment that bundles one or more applications and their dependencies
+- OS-level virtualization with process-level isolation on host system
+- Provides a custom user space separate from host system
+- Uses host system kernel (system resource manager; hardware/software interface)
+- Performance comparable to (or better) than native installation on host system
+
+General example:
+
+```bash
+Container = Operating system + Libraries + Applications
+```
+
+Specific example:
+
+```bash
+R container = Debian + libcurl,libpng,etc. + R + R packages
+```
+
+---
+
+## What do software containers enable?
+
+- Isolation from host system
+- Portability across systems
+- Shareability among users
+- Stability over time
+- Reproducibility over time
+- Security on shared systems
+
+---
+
+## Diverse container ecosystem
+
+- Container image formats
+  - Docker, LXD, etc.
+  - Singularity Image Format (SIF)
+- Container engines
+  - Docker, LXC, etc.
+  - Apptainer
+- Container registries
+  - Docker Hub, Quay, etc.
+- Open Container Initiative (OCI) for interoperability
+  - Image format standard
+  - Runtime standard
+  - Distribution standard
+
+---
+
+## Apptainer container engine
+
+- A container engine designed for Linux and HPC clusters
+  - Unprivileged build and run processes
+  - Defaults to some integration with the host system (e.g., mounting home directory)
+- Originally developed at LBNL under the name Singularity
+- Uses Singularity Image Format (SIF)
+  - File format for storing software container environment in a single file
+  - A single immutable, compressed, executable image file (`.sif`)
+- Project affiliated with the [Linux Foundation](https://hpsf.io/projects/apptainer/)
+
+---
+
+## Docker vs. Apptainer
+
+- Docker
+  - Designed for running persistent services (e.g., web apps)
+  - Originally required superuser privileges to build and run container images
+  - Now has a rootless mode for unprivileged use (with limitations)
+- Apptainer
+  - Designed for running HPC workloads on shared Linux systems
+  - Does not require superuser privileges to build or run container images
+- Superuser privileges restricted to system admins on shared systems
+- Both can interoperate with OCI images
+- [Apptainer docs for Docker support](https://apptainer.org/docs/user/latest/docker_and_oci.html)
+
+---
+
+## Alternative container engines
+
+- [SingularityCE](https://sylabs.io/singularity/)
+- [Charliecloud](https://hpc.github.io/charliecloud/)
+- [Sarus](https://sarus.readthedocs.io/en/stable/index.html)
+- [Shifter](https://shifter.readthedocs.io/en/latest/)
+- [Podman](https://podman.io/)
+
+---
+
+## Why use Apptainer for research computing?
+
+- Portability, shareability, and reproducibility are key reasons
+  - Ease installation issues by using pre-built container images
+  - Back up and archive software environments
+  - Ensure stable and reproducible software environments over time
+  - Ensure the same software environment is used across Linux systems
+      - Workstations
+      - HPC clusters
+      - Cloud computing services
+  - Ensure the same software environment is used among a research group
+      - Collaborations across multiple institutions
+      - Common workflows or pipelines
+- Some other reasons
+  - Convert Docker images to Apptainer images to run on HPC clusters
+  - Use software that depends on a newer glibc version not available on the host system
+  - Custom user space (based on any Linux OS)
+
+---
+
+## Limitations of Apptainer
+
+- Designed for Linux systems
+- Portability depends on a few factors
+  - CPU architecture format (x86 vs. ARM)
+  - Binary format (ELF)
+  - Kernel, glibc, other API compatibility
+- New versions may not be backward compatible
+- May need superuser privileges to build certain images
+
+---
+
+## Accessing Apptainer on CARC clusters
+
+Load the software module:
+
+```bash
+module purge
+module load apptainer/1.4.1
+```
+
+Simple test:
+
+```bash
+apptainer --help
+```
+
+---
+
+class: center, middle, inverse
+
+## Section 2
+
+### Downloading existing container images
+
+---
+
+## Acquiring container images
+
+- Pull (download) existing images from container registries
+    - [Docker Hub](https://hub.docker.com/)
+    - [BioContainers](https://biocontainers.pro)
+    - [Dockstore](https://www.dockstore.org/)
+    - [NVIDIA GPU Cloud Catalog](https://catalog.ngc.nvidia.com/containers)
+- Download existing images from software websites
+- Build a custom image
+
+---
+
+## Pulling existing container images
+
+- Download from container registries via `apptainer pull`
+- Syntax uses registry name, repository name, image name, and tag
+- File system xattr warnings can be ignored
+
+First request resources on a compute node:
+
+```bash
+salloc -c 4
+```
+
+Then pull the image (some [Docker Hub](https://hub.docker.com/) examples):
+
+```bash
+module purge
+module load apptainer/1.4.1
+
+apptainer pull docker://python:latest
+
+apptainer pull python.sif docker://python:latest
+
+apptainer pull docker://python:3.11.13
+
+apptainer pull docker://rocker/r-ver:4.5.1
+```
+
+---
+
+## Limited /tmp space
+
+- Apptainer uses /tmp space when pulling and building images
+- For large images, the /tmp space may be too small, causing failure
+- The /tmp space is limited by the job's memory request
+
+Request sufficient memory on a compute node:
+
+```bash
+salloc -c 4 --mem=64G
+```
+
+Then pull the image:
+
+```bash
+apptainer pull docker://nvcr.io/nvidia/pytorch:25.06-py3
+```
+
+Or change the TMPDIR location to your /project2 directory (slower):
+
+```bash
+mkdir /project2/ttrojan_123/user/apptainer/tmp
+
+export APPTAINER_TMPDIR=/project2/ttrojan_123/user/apptainer/tmp
+
+apptainer pull docker://nvcr.io/nvidia/pytorch:25.06-py3
+```
+
+---
+
+## Container image cache
+
+- Images are cached when you pull them, which uses storage space
+- By default, the cache is located in your home directory at `~/.apptainer/cache`
+
+Change location of cache directory with environment variable:
+
+```bash
+mkdir /project2/ttrojan_123/user/apptainer/cache
+
+export APPTAINER_CACHEDIR=/project2/ttrojan_123/user/apptainer/cache
+```
+
+List and clean the cache:
+
+```bash
+apptainer cache list
+
+apptainer cache clean
+```
+
+---
+
+class: center, middle, inverse
+
+## Section 3
+
+### Running containers
+
+---
+
+## Running containers
+
+- Containers can be run in interactive or batch modes
+- Various options can be used to isolate/integrate with the host system
+- A container process is like any other Linux process
+- Same user within the container as on the host system
+
+Run an interactive shell within the container:
+
+```bash
+apptainer shell [options] <image>
+```
+
+Run batch commands within the container:
+
+```bash
+apptainer exec [options] <image> <commands>
+```
+
+Run the embedded runscript within the container:
+
+```bash
+apptainer run [options] <image> <arguments>
+```
+
+---
+
+## Examples for running containers
+
+Run an interactive shell within the container:
+
+```bash
+apptainer shell python.sif
+```
+
+Run batch commands within the container:
+
+```bash
+apptainer exec python.sif python -c 'print("Hello world")'
+
+apptainer exec python.sif python script.py
+```
+
+Run the embedded runscript within the container:
+
+```bash
+apptainer run python.sif
+```
+
+---
+
+## File system within containers
+
+- Unique file system within the container
+  - `/bin`
+  - `/lib`
+  - `/opt`
+  - `/usr`
+- Some directories mounted from the host system by default
+  - `/dev`
+  - `/proc`
+  - `/sys`
+  - `/tmp`
+  - `/var/tmp`
+  - `$HOME`
+  - `$PWD`
+
+---
+
+## Bind mounting directories to containers
+
+- Use `--bind/-B` option to mount files or directories to containers
+- By default `$HOME` and `$PWD` are mounted
+- Multiple bind paths separated by a comma
+
+Add your `/project2` directory:
+
+```bash
+apptainer exec --bind /project2/ttrojan_123 python.sif python script.py
+```
+
+Change name when binding if needed:
+
+```bash
+apptainer exec --bind /project2/ttrojan_123:/mydir python.sif python script.py
+```
+
+Could use environment variable instead:
+
+```bash
+export APPTAINER_BIND=/project2/ttrojan_123,/scratch1/ttrojan
+
+apptainer exec python.sif python script.py
+```
+
+---
+
+## Useful options for isolation
+
+- Use `--cleanenv/-e` option to minimize environment variables passed to container
+  - All variables passed to container by default
+  - Will remove SLURM_* variables
+  - Use `--env` option to pass specific variables
+- Use `--no-home` option to exclude `/home1` directory
+  - For example, Python or R containers
+  - Python and R packages are installed in your home directory by default
+  - Can lead to conflicts with software installed in container
+- Use `--containall/-C` to maximize isolation (no $HOME, clean env, etc.)
+
+Some examples:
+
+```bash
+apptainer shell --cleanenv --no-home python.sif
+
+apptainer exec --no-home python.sif python script.py
+
+apptainer exec --containall python.sif python script.py
+```
+
+---
+
+## Running containers using GPUs
+
+- Containers need to access host GPU driver
+- Use `--nv` option to access NVIDIA GPUs
+- Run `nvidia-smi` on NVIDIA GPU node to see current driver version and compatibility
+- Use `--rocm` option to access AMD ROCm GPUs (none on CARC clusters)
+- [GPU support docs](https://apptainer.org/docs/user/latest/gpu.html)
+
+For example, PyTorch using an NVIDIA GPU:
+
+```bash
+apptainer shell --nv --no-home pytorch.sif
+
+apptainer exec --nv --no-home pytorch.sif python script.py
+```
+
+---
+
+## Running containers using MPI
+
+- MPI enables use of multiple compute nodes
+- Two approaches: hybrid vs. mount
+- Pros and cons for each approach
+- Less portable because it depends on MPI libraries available on host system
+- [MPI support docs](https://apptainer.org/docs/user/latest/mpi.html)
+
+For example, an MPI program built with MPICH:
+
+```bash
+srun --mpi=pmi2 -n $SLURM_NTASKS apptainer exec mpich.sif /opt/mpi_program
+```
+
+---
+
+## Example Slurm job script
+
+```bash
+#!/bin/bash
+
+#SBATCH --account=<project_id>
+#SBATCH --partition=main
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=8
+#SBATCH --mem=16G
+#SBATCH --time=1:00:00
+
+module purge
+module load apptainer/1.4.1
+
+apptainer exec --cleanenv --no-home python.sif python script.py
+```
+
+---
+
+## Example Slurm job script using env vars
+
+```bash
+#!/bin/bash
+
+#SBATCH --account=<project_id>
+#SBATCH --partition=main
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=8
+#SBATCH --mem=16G
+#SBATCH --time=1:00:00
+
+module purge
+module load apptainer/1.4.1
+
+export APPTAINER_CLEANENV=true
+export APPTAINER_NO_HOME=true
+export APPTAINER_BIND=/project2/ttrojan_123
+
+apptainer exec python.sif python script.py
+```
+
+---
+
+## Example Slurm job script using GPU
+
+```bash
+#!/bin/bash
+
+#SBATCH --account=<project_id>
+#SBATCH --partition=gpu
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=8
+#SBATCH --gpus-per-task=a100:1
+#SBATCH --mem=32G
+#SBATCH --time=1:00:00
+
+module purge
+module load apptainer/1.4.1
+
+apptainer exec --nv --no-home pytorch.sif python script.py
+```
+
+---
+
+class: center, middle, inverse
+
+## Section 4
+
+### Building custom container images
+
+---
+
+## Building custom container images
+
+- Build in batch mode via `apptainer build`
+  - Using a definition file (build recipe)
+  - Reproducible to some extent
+- Build interactively in sandbox mode via `apptainer build --sandbox`
+  - Not an image file but a directory structure
+  - Can be useful for development purposes, but not easily reproducible or immutable
+  - Keep track of commands issued and convert to a definition file
+- Unprivileged builds enabled via `libfakeroot`
+  - Provides a fake root (superuser) environment in which to build
+  - The `--fakeroot` option will automatically be invoked
+- File system xattr warnings can be ignored
+
+---
+
+## Building workflow
+
+1. Create a definition file
+2. Build image using the definition file
+3. If error occurs, modify definition file and rebuild (back to step 1)
+4. Test image
+5. If error occurs, modify definition file and rebuild (back to step 1)
+
+---
+
+## Definition files
+
+- Recipe for building a container image
+  - Start with an existing base image from a registry or local file
+  - Could be a minimal image for a Linux OS (e.g., Debian, AlmaLinux, etc.)
+  - Or other image with some needed software already installed
+  - Then install more software, add files, set environment variables, etc.
+- Similar to a Dockerfile, but different syntax
+- Document and version control definition files for reproducibility
+- [Apptainer docs for definition files](https://apptainer.org/docs/user/latest/definition_files.html)
+- [Apptainer docs for build modules](https://apptainer.org/docs/user/latest/appendix.html#build-modules)
+
+---
+
+## Structure of a definition file
+
+```bash
+# Header (required)
+Bootstrap: <agent>
+From: <registry>/<namespace>/<container>:<tag>@<digest>
+
+# Sections (optional)
+%files
+Copy files from the host system into the container image
+
+%post
+Install software, write configuration files, etc.
+
+%test
+Run commands to validate build process
+
+%environment
+Define environment variables that will be set at runtime
+
+%runscript
+Run commands when apptainer run command is used
+
+%labels
+Add metadata labels (key-value pairs)
+
+%help
+Describe the container and its intended use
+```
+
+---
+
+## Example definition file for Debian with GCC
+
+```bash
+Bootstrap: docker
+From: debian:12
+
+
+%post
+
+apt-get -y update
+apt-get -y upgrade
+apt-get -y install gcc g++ gfortran
+
+
+%test
+
+gcc --version
+g++ --version
+gfortran --version
+
+
+%help
+
+Debian 12 with GCC 12.2.
+```
+
+---
+
+## Example definition file for Python with csvkit
+
+```bash
+Bootstrap: docker
+From: python:3.11.13
+
+
+%post
+
+python -m venv /opt/csvkit
+. /opt/csvkit/bin/activate
+pip install csvkit==2.1.0
+
+
+%test
+
+. /opt/csvkit/bin/activate
+python --version
+pip list
+
+
+%runscript
+
+. /opt/csvkit/bin/activate
+python
+
+
+%help
+
+Python 3.11.13 with csvkit 2.1.0.
+```
+
+---
+
+## Example definition file for R with data.table
+
+```bash
+Bootstrap: docker
+From: rocker/r-ver:4.5.1
+
+
+%post
+
+Rscript -e 'install.packages("data.table")'
+
+
+%test
+
+Rscript --version
+
+
+%runscript
+
+R
+
+
+%help
+
+R 4.5.1 with data.table.
+```
+
+---
+
+## Example for building an image
+
+First request resources on a compute node:
+
+```bash
+salloc -c 4
+```
+
+Then build the image:
+
+```bash
+module purge
+module load apptainer/1.4.1
+
+apptainer build csvkit.sif csvkit.def
+```
+
+---
+
+## Installing optimized software
+
+- "Optimized" typically means targeting specific hardware (e.g., CPU microarchitecture)
+- Tradeoff between portability and performance
+- Choice of base Linux OS for an image can be important for performance
+- Using Linux OS software package managers (e.g., APT, DNF) typically downloads generic binaries
+- Debian's APT provides [apt-build](https://manpages.debian.org/latest/apt-build/apt-build.1.en.html) to build packages with CPU architecture optimizations
+- [Spack](https://spack.readthedocs.io/en/latest/index.html) can be used to build and [containerize](https://spack.readthedocs.io/en/latest/containers.html) optimized software environments
+
+---
+
+## Multi-stage builds
+
+- Apptainer also supports [multi-stage builds](https://apptainer.org/docs/user/latest/definition_files.html#multi-stage-builds)
+- Primary use case is to minimize final image size by removing build-time dependencies
+- In the first stage, build main application
+  - Install build-time dependencies
+  - Build main application
+- In the second stage, copy build of main application
+  - Starts with fresh software environment
+  - Removes build-time dependencies
+  - Only install run-time dependencies
+
+---
+
+class: center, middle, inverse
+
+## Section 5
+
+### Inspecting container images
+
+---
+
+## Inspecting container images
+
+See the definition file used to build the image:
+
+```bash
+apptainer inspect --deffile python.sif
+```
+
+See the help message for the image:
+
+```bash
+apptainer inspect --helpfile python.sif
+```
+
+See the environment variables set when running the container:
+
+```bash
+apptainer inspect --environment python.sif
+```
+
+See the runscript for the image:
+
+```bash
+apptainer inspect --runscript python.sif
+```
+
+---
+
+class: center, middle, inverse
+
+## Section 6
+
+### Other features
+
+---
+
+## Apptainer environment variables
+
+- Many useful environment variables can be set
+- Add to `~/.bashrc` to automatically set every time you log in
+- See full list [here](https://apptainer.org/docs/user/latest/appendix.html#apptainer-s-environment-variables)
+
+Some examples:
+
+```bash
+export APPTAINER_TMPDIR=/project2/ttrojan_123/user/apptainer/tmp
+
+export APPTAINER_CACHEDIR=/project2/ttrojan_123/user/apptainer/cache
+
+export APPTAINER_CLEANENV=true
+
+export APPTAINER_NO_HOME=true
+
+export APPTAINERENV_MYVAR=myvalue
+
+export APPTAINERENV_PREPEND_PATH=/opt/software/bin
+```
+
+---
+
+## Other features
+
+- [Writable overlays](https://apptainer.org/docs/user/latest/persistent_overlays.html)
+- [Data containers and image mounts](https://apptainer.org/docs/user/latest/bind_paths_and_mounts.html#image-mounts)
+- [Signing and verifying container images](https://apptainer.org/docs/user/latest/signNverify.html)
+- [Encrypting container images](https://apptainer.org/docs/user/latest/encryption.html)
+- [Running background services (e.g., database)](https://apptainer.org/docs/user/latest/running_services.html)
+
+---
+
+class: center, middle, inverse
+
+## Section 7
+
+### Resources and support
+
+---
+
+## Apptainer documentation
+
+- [Apptainer website](https://apptainer.org/)
+- [Apptainer docs](https://apptainer.org/docs/user/latest/)
+- Command-line help
+
+Some examples:
+
+```bash
+apptainer help
+
+apptainer help shell
+
+apptainer help exec
+
+apptainer help run
+```
+
+---
+
+## Container registries
+
+- [Docker Hub](https://hub.docker.com/)
+- [BioContainers](https://biocontainers.pro)
+- [Dockstore](https://dockstore.org/)
+- [NVIDIA GPU Cloud Catalog](https://catalog.ngc.nvidia.com/containers)
+
+---
+
+## CARC support
+
+- [Workshop materials](https://github.com/uschpc/workshop-apptainer)
+- [Submit a support ticket](https://www.carc.usc.edu/user-support/submit-ticket)
+- Office Hours
+  - Every Tuesday 2:30-5pm
+  - Get Zoom link [here](https://www.carc.usc.edu/user-support/office-hours-and-consultations)
+
+---
+
+class: center, middle, inverse
+
+## Section 8
+
+### Exercises
+
+---
+
+## Exercises
+
+1. Pull a container image from a registry
+2. Bind mount a `/project2` directory to a container and list its files
+3. Run `uname -a` on the host system and within a container
+4. Run `cat /etc/os-release` on the host system and within a container
+5. Build a custom container image
+6. Inspect the environment settings for a container image
+
+    </textarea>
+    <script src="https://remarkjs.com/downloads/remark-latest.min.js">
+    </script>
+    <script>
+      var slideshow = remark.create({
+        ratio: "16:10",
+        highlightStyle: "ascetic",
+      });
+    </script>
+  </body>
+</html>
