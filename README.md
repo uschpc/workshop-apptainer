@@ -2,15 +2,15 @@
 
 Workshop materials for *Software Containers with Apptainer*.
 
-An overview of software containers and how to use [Apptainer](https://apptainer.org) to create and run containers for high-performance computing tasks.
+Using [Apptainer](https://apptainer.org) to build and run portable, reproducible software containers for research computing tasks.
 
 Slides: https://uschpc.github.io/workshop-apptainer
 
 Learning objectives:
 
-- Explain what a software container does
+- Explain the purpose of software containers
 - Describe use cases for containers
-- Pull, build, and run a container image
+- Pull, build, and run containers
 - Convert a Docker image to an Apptainer image
 - Use Apptainer on CARC HPC clusters
 
