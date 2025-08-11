@@ -1,0 +1,23 @@
+Bootstrap: docker
+From: ubuntu:22.04
+
+
+%post
+
+# Update packages
+apt-get -y update
+apt-get -y upgrade
+
+# Remove unneeded files
+apt-get -y clean
+rm -rf /var/lib/apt/lists/*
+
+
+%test
+
+cat /etc/os-release
+
+
+%help
+
+Ubuntu 22.04.

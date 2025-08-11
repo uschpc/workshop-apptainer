@@ -1,0 +1,23 @@
+Bootstrap: docker
+From: debian:11
+
+
+%post
+
+# Update packages
+apt-get -y update
+apt-get -y upgrade
+
+# Remove unneeded files
+apt-get -y clean
+rm -rf /var/lib/apt/lists/*
+
+
+%test
+
+cat /etc/os-release
+
+
+%help
+
+Debian 11.

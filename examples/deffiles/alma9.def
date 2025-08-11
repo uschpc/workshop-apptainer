@@ -1,0 +1,21 @@
+Bootstrap: docker
+From: almalinux:9
+
+
+%post
+
+# Update packages
+dnf -y upgrade
+
+# Remove unneeded files
+dnf -y clean all
+
+
+%test
+
+cat /etc/os-release
+
+
+%help
+
+AlmaLinux 9.

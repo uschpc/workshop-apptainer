@@ -1,0 +1,37 @@
+Bootstrap: docker
+From: python:latest
+
+
+%post
+
+# Update packages
+apt-get -y update
+apt-get -y upgrade
+
+# Install Python venv
+python -m venv /opt/venv
+. /opt/venv/bin/activate
+pip install csvkit==2.1.0
+
+# Remove unneeded files
+apt-get -y clean
+rm -rf /var/lib/apt/lists/*
+pip cache purge
+
+
+%test
+
+. /opt/venv/bin/activate
+python --version
+pip list
+
+
+%runscript
+
+. /opt/venv/bin/activate
+python
+
+
+%help
+
+Python with venv.

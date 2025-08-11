@@ -1,0 +1,35 @@
+Bootstrap: docker
+From: condaforge/miniforge3:latest
+
+
+%post
+
+# Update packages
+apt-get -y update
+apt-get -y upgrade
+
+# Install Conda environment
+eval "$(conda shell.bash hook)"
+conda create -n myenv
+conda activate myenv
+conda install -yq python
+
+# Remove unneeded files
+apt-get -y clean
+rm -rf /var/lib/apt/lists/*
+conda clean -yqa
+
+
+%test
+
+eval "$(conda shell.bash hook)"
+conda activate myenv
+python --version
+
+
+%help
+
+Containerized Conda environment using miniforge3.
+When using the container, first run:
+    eval "$(conda shell.bash hook)"
+in order to load Conda in your shell.
