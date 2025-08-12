@@ -8,9 +8,7 @@ From: python:latest
 apt-get -y update
 apt-get -y upgrade
 
-# Install Python venv
-python -m venv /opt/venv
-. /opt/venv/bin/activate
+# Install Python packages
 pip install csvkit==2.1.0
 
 # Remove unneeded files
@@ -21,17 +19,15 @@ pip cache purge
 
 %test
 
-. /opt/venv/bin/activate
 python --version
 pip list
 
 
 %runscript
 
-. /opt/venv/bin/activate
 python
 
 
 %help
 
-Python with venv.
+Python with packages.
