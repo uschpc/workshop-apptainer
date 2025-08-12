@@ -17,7 +17,7 @@ class: center, top, title-slide
 
 ### Center for Advanced Research Computing <br> University of Southern California <br>
 
-#### Last updated on 2025-08-08
+#### Last updated on 2025-08-12
 
 ---
 
@@ -83,12 +83,12 @@ R container = Debian + libcurl,libpng,etc. + R + R packages
 
 ## What do software containers enable?
 
-- Isolation from host system
-- Portability across systems
-- Shareability among users
-- Stability over time
-- Reproducibility over time
-- Security on shared systems
+- **Isolation** from host system
+- **Portability** across systems
+- **Shareability** among users
+- **Stability** over time
+- **Reproducibility** over time
+- **Security** on shared systems
 
 ---
 
@@ -254,13 +254,13 @@ apptainer pull docker://rocker/r-ver:4.5.1
 Request sufficient memory on a compute node:
 
 ```bash
-salloc -c 4 --mem=64G
+salloc -c 4 --mem=32G
 ```
 
 Then pull the image:
 
 ```bash
-apptainer pull docker://nvcr.io/nvidia/pytorch:25.06-py3
+apptainer pull docker://pytorch:2.8.0-cuda12.9-cudnn9-runtime
 ```
 
 Or change the TMPDIR location to your /project2 directory (slower):
@@ -270,7 +270,7 @@ mkdir /project2/ttrojan_123/user/apptainer/tmp
 
 export APPTAINER_TMPDIR=/project2/ttrojan_123/user/apptainer/tmp
 
-apptainer pull docker://nvcr.io/nvidia/pytorch:25.06-py3
+apptainer pull docker://pytorch:2.8.0-cuda12.9-cudnn9-runtime
 ```
 
 ---
@@ -283,9 +283,9 @@ apptainer pull docker://nvcr.io/nvidia/pytorch:25.06-py3
 Change location of cache directory with environment variable:
 
 ```bash
-mkdir /project2/ttrojan_123/user/apptainer/cache
+mkdir /project2/ttrojan_123/user/apptainer
 
-export APPTAINER_CACHEDIR=/project2/ttrojan_123/user/apptainer/cache
+export APPTAINER_CACHEDIR=/project2/ttrojan_123/user/apptainer
 ```
 
 List and clean the cache:
@@ -438,9 +438,9 @@ apptainer exec --containall python.sif python script.py
 For example, PyTorch using an NVIDIA GPU:
 
 ```bash
-apptainer shell --nv --no-home pytorch.sif
+apptainer shell --nv --cleanenv --no-home pytorch.sif
 
-apptainer exec --nv --no-home pytorch.sif python script.py
+apptainer exec --nv --cleanenv --no-home pytorch.sif python script.py
 ```
 
 ---
@@ -524,7 +524,7 @@ apptainer exec python.sif python script.py
 module purge
 module load apptainer/1.4.1
 
-apptainer exec --nv --no-home pytorch.sif python script.py
+apptainer exec --nv --cleanenv --no-home pytorch.sif python script.py
 ```
 
 ---
@@ -646,21 +646,17 @@ From: python:3.11.13
 
 %post
 
-python -m venv /opt/csvkit
-. /opt/csvkit/bin/activate
 pip install csvkit==2.1.0
 
 
 %test
 
-. /opt/csvkit/bin/activate
 python --version
 pip list
 
 
 %runscript
 
-. /opt/csvkit/bin/activate
 python
 
 
