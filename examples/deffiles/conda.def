@@ -30,6 +30,6 @@ python --version
 %help
 
 Containerized Conda environment using miniforge3.
-When using the container, first run:
+When using the container, activate with:
     eval "$(conda shell.bash hook)"
-in order to load Conda in your shell.
+    conda activate myenv
