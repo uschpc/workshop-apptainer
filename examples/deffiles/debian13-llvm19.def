@@ -1,0 +1,26 @@
+Bootstrap: docker
+From: debian:13
+
+
+%post
+
+# Update and install packages
+apt-get -y update
+apt-get -y upgrade
+apt-get -y install clang flang
+
+# Remove unneeded files
+apt-get -y clean
+rm -rf /var/lib/apt/lists/*
+
+
+%test
+
+clang --version
+clang++ --version
+flang-new --version
+
+
+%help
+
+Debian 13 with LLVM 19.
