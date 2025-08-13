@@ -10,6 +10,6 @@
 #SBATCH --time=1:00:00
 
 module purge
-module load apptainer/1.4.1
+module load apptainer/1.4.2
 
 apptainer exec --nv --cleanenv --no-home pytorch.sif python script.py

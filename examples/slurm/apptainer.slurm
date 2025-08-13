@@ -9,6 +9,6 @@
 #SBATCH --time=1:00:00
 
 module purge
-module load apptainer/1.4.1
+module load apptainer/1.4.2
 
 apptainer exec --cleanenv --no-home python.sif python script.py
