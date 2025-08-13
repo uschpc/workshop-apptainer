@@ -17,7 +17,7 @@ class: center, top, title-slide
 
 ### Center for Advanced Research Computing <br> University of Southern California <br>
 
-#### Last updated on 2025-08-12
+#### Last updated on 2025-08-13
 
 ---
 
@@ -185,7 +185,7 @@ Load the software module:
 
 ```bash
 module purge
-module load apptainer/1.4.1
+module load apptainer/1.4.2
 ```
 
 Simple test:
@@ -232,7 +232,7 @@ Then pull the image (some [Docker Hub](https://hub.docker.com/) examples):
 
 ```bash
 module purge
-module load apptainer/1.4.1
+module load apptainer/1.4.2
 
 apptainer pull docker://python:latest
 
@@ -260,7 +260,7 @@ salloc -c 4 --mem=32G
 Then pull the image:
 
 ```bash
-apptainer pull docker://pytorch:2.8.0-cuda12.9-cudnn9-runtime
+apptainer pull docker://pytorch/pytorch:2.8.0-cuda12.9-cudnn9-runtime
 ```
 
 Or change the TMPDIR location to your /project2 directory (slower):
@@ -270,7 +270,7 @@ mkdir /project2/ttrojan_123/user/apptainer/tmp
 
 export APPTAINER_TMPDIR=/project2/ttrojan_123/user/apptainer/tmp
 
-apptainer pull docker://pytorch:2.8.0-cuda12.9-cudnn9-runtime
+apptainer pull docker://pytorch/pytorch:2.8.0-cuda12.9-cudnn9-runtime
 ```
 
 ---
@@ -329,6 +329,34 @@ Run the embedded runscript within the container:
 
 ```bash
 apptainer run [options] <image> <arguments>
+```
+
+---
+
+## Kernel, OS, and user comparisons
+
+Compare kernel versions:
+
+```bash
+uname -r
+
+apptainer exec python.sif uname -r
+```
+
+Compare OS versions:
+
+```bash
+cat /etc/os-release
+
+apptainer exec python.sif cat /etc/os-release
+```
+
+Compare users:
+
+```bash
+whoami
+
+apptainer exec python.sif whoami
 ```
 
 ---
@@ -410,10 +438,11 @@ apptainer exec python.sif python script.py
   - Will remove SLURM_* variables
   - Use `--env` option to pass specific variables
 - Use `--no-home` option to exclude `/home1` directory
+  - Will not fully exclude if $PWD is in $HOME
   - For example, Python or R containers
   - Python and R packages are installed in your home directory by default
   - Can lead to conflicts with software installed in container
-- Use `--containall/-C` to maximize isolation (no $HOME, clean env, etc.)
+- Use `--containall/-C` to maximize isolation (clean env, no $HOME, etc.)
 
 Some examples:
 
@@ -423,40 +452,6 @@ apptainer shell --cleanenv --no-home python.sif
 apptainer exec --no-home python.sif python script.py
 
 apptainer exec --containall python.sif python script.py
-```
-
----
-
-## Running containers using GPUs
-
-- Containers need to access host GPU driver
-- Use `--nv` option to access NVIDIA GPUs
-- Run `nvidia-smi` on NVIDIA GPU node to see current driver version and compatibility
-- Use `--rocm` option to access AMD ROCm GPUs (none on CARC clusters)
-- [GPU support docs](https://apptainer.org/docs/user/latest/gpu.html)
-
-For example, PyTorch using an NVIDIA GPU:
-
-```bash
-apptainer shell --nv --cleanenv --no-home pytorch.sif
-
-apptainer exec --nv --cleanenv --no-home pytorch.sif python script.py
-```
-
----
-
-## Running containers using MPI
-
-- MPI enables use of multiple compute nodes
-- Two approaches: hybrid vs. mount
-- Pros and cons for each approach
-- Less portable because it depends on MPI libraries available on host system
-- [MPI support docs](https://apptainer.org/docs/user/latest/mpi.html)
-
-For example, an MPI program built with MPICH:
-
-```bash
-srun --mpi=pmi2 -n $SLURM_NTASKS apptainer exec mpich.sif /opt/mpi_program
 ```
 
 ---
@@ -475,7 +470,7 @@ srun --mpi=pmi2 -n $SLURM_NTASKS apptainer exec mpich.sif /opt/mpi_program
 #SBATCH --time=1:00:00
 
 module purge
-module load apptainer/1.4.1
+module load apptainer/1.4.2
 
 apptainer exec --cleanenv --no-home python.sif python script.py
 ```
@@ -496,13 +491,35 @@ apptainer exec --cleanenv --no-home python.sif python script.py
 #SBATCH --time=1:00:00
 
 module purge
-module load apptainer/1.4.1
+module load apptainer/1.4.2
 
 export APPTAINER_CLEANENV=true
 export APPTAINER_NO_HOME=true
 export APPTAINER_BIND=/project2/ttrojan_123
 
 apptainer exec python.sif python script.py
+```
+
+---
+
+## Running containers using GPUs
+
+- Graphics Processing Unit (GPU) use cases
+  - Visualization
+  - Machine learning
+  - Artificial intelligence
+- Containers need to access host GPU driver
+- Use `--nv` option to access NVIDIA GPUs
+- Run `nvidia-smi` on NVIDIA GPU node to see current driver version and compatibility
+- Use `--rocm` option to access AMD ROCm GPUs (none on CARC clusters)
+- [GPU support docs](https://apptainer.org/docs/user/latest/gpu.html)
+
+For example, PyTorch using an NVIDIA GPU:
+
+```bash
+apptainer shell --nv --cleanenv --no-home pytorch.sif
+
+apptainer exec --nv --cleanenv --no-home pytorch.sif python script.py
 ```
 
 ---
@@ -522,9 +539,48 @@ apptainer exec python.sif python script.py
 #SBATCH --time=1:00:00
 
 module purge
-module load apptainer/1.4.1
+module load apptainer/1.4.2
 
 apptainer exec --nv --cleanenv --no-home pytorch.sif python script.py
+```
+
+---
+
+## Running containers using MPI
+
+- Message Passing Interface (MPI) use cases
+  - Multiple compute nodes
+  - Scaling using distributed CPUs and memory
+- Two approaches: hybrid vs. mount
+- Pros and cons for each approach
+- Less portable because it depends on MPI libraries available on host system
+- [MPI support docs](https://apptainer.org/docs/user/latest/mpi.html)
+
+For example, an MPI program built and run with MPICH:
+
+```bash
+srun --mpi=pmi2 -n $SLURM_NTASKS apptainer exec mpich.sif /opt/mpi_program
+```
+
+---
+
+## Example Slurm job script using MPI
+
+```bash
+#!/bin/bash
+
+#SBATCH --account=<project_id>
+#SBATCH --partition=main
+#SBATCH --nodes=2
+#SBATCH --ntasks-per-node=8
+#SBATCH --cpus-per-task=1
+#SBATCH --mem=16G
+#SBATCH --time=1:00:00
+
+module purge
+module load apptainer/1.4.2
+
+srun --mpi=pmi2 -n $SLURM_NTASKS apptainer exec mpich.sif /opt/mpi_program
 ```
 
 ---
@@ -613,7 +669,7 @@ Describe the container and its intended use
 
 ```bash
 Bootstrap: docker
-From: debian:12
+From: debian:13
 
 
 %post
@@ -632,7 +688,7 @@ gfortran --version
 
 %help
 
-Debian 12 with GCC 12.2.
+Debian 13 with GCC 14.2.
 ```
 
 ---
@@ -708,7 +764,7 @@ Then build the image:
 
 ```bash
 module purge
-module load apptainer/1.4.1
+module load apptainer/1.4.2
 
 apptainer build csvkit.sif csvkit.def
 ```
@@ -875,12 +931,9 @@ class: center, middle, inverse
 
 ## Exercises
 
-1. Pull a container image from a registry
+1. Pull an AlmaLinux container image from DockerHub
 2. Bind mount a `/project2` directory to a container and list its files
-3. Run `uname -a` on the host system and within a container
-4. Run `cat /etc/os-release` on the host system and within a container
-5. Build a custom container image
-6. Inspect the environment settings for a container image
+3. Build a custom container image for BEDTools using Debian as the base OS
 
     </textarea>
     <script src="https://remarkjs.com/downloads/remark-latest.min.js">
