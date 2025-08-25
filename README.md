@@ -2,7 +2,7 @@
 
 Workshop materials for *Software Containers with Apptainer*.
 
-Use Apptainer to build and run portable, reproducible software containers for research computing tasks.
+Build and run portable, reproducible software containers for research computing tasks using Apptainer.
 
 Slides: https://uschpc.github.io/workshop-apptainer
 
