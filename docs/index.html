@@ -17,7 +17,7 @@ class: center, top, title-slide
 
 ### Center for Advanced Research Computing <br> University of Southern California <br>
 
-#### Last updated on 2025-08-20
+#### Last updated on 2025-09-05
 
 ---
 
@@ -333,6 +333,30 @@ apptainer run [options] <image> <arguments>
 
 ---
 
+## Examples for running containers
+
+Run an interactive shell within the container:
+
+```bash
+apptainer shell python.sif
+```
+
+Run batch commands within the container:
+
+```bash
+apptainer exec python.sif python -c 'print("Hello world")'
+
+apptainer exec python.sif python script.py
+```
+
+Run the embedded runscript within the container:
+
+```bash
+apptainer run python.sif
+```
+
+---
+
 ## Kernel, OS, and user comparisons
 
 Compare kernel versions:
@@ -357,30 +381,6 @@ Compare users:
 whoami
 
 apptainer exec python.sif whoami
-```
-
----
-
-## Examples for running containers
-
-Run an interactive shell within the container:
-
-```bash
-apptainer shell python.sif
-```
-
-Run batch commands within the container:
-
-```bash
-apptainer exec python.sif python -c 'print("Hello world")'
-
-apptainer exec python.sif python script.py
-```
-
-Run the embedded runscript within the container:
-
-```bash
-apptainer run python.sif
 ```
 
 ---
@@ -732,7 +732,6 @@ From: rocker/r-ver:4.5.1
 
 %post
 
-# Install R packages
 Rscript -e 'install.packages("pak")'
 Rscript -e 'pak::pak("data.table")'
 
