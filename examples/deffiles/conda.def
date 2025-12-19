@@ -9,6 +9,7 @@ apt-get -y update
 apt-get -y upgrade
 
 # Install Conda environment
+# Default channel is conda-forge
 eval "$(conda shell.bash hook)"
 conda create -n myenv
 conda activate myenv
@@ -24,7 +25,7 @@ conda clean -yqa
 
 eval "$(conda shell.bash hook)"
 conda activate myenv
-python --version
+conda list
 
 
 %help
