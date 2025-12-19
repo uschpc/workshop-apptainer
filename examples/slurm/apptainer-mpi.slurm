@@ -9,6 +9,6 @@
 #SBATCH --time=1:00:00
 
 module purge
-module load apptainer/1.4.2
+module load apptainer/1.4.5
 
 srun --mpi=pmi2 -n $SLURM_NTASKS apptainer exec mpich.sif /opt/mpi_program
