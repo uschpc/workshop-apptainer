@@ -17,7 +17,7 @@ class: center, top, title-slide
 
 ### Center for Advanced Research Computing <br> University of Southern California <br>
 
-#### Last updated on 2025-09-05
+#### Last updated on 2025-12-19
 
 ---
 
@@ -185,7 +185,7 @@ Load the software module:
 
 ```bash
 module purge
-module load apptainer/1.4.2
+module load apptainer/1.4.5
 ```
 
 Simple test:
@@ -232,15 +232,15 @@ Then pull the image (some [Docker Hub](https://hub.docker.com/) examples):
 
 ```bash
 module purge
-module load apptainer/1.4.2
+module load apptainer/1.4.5
 
 apptainer pull docker://python:latest
 
 apptainer pull python.sif docker://python:latest
 
-apptainer pull docker://python:3.11.13
+apptainer pull docker://python:3.11.14
 
-apptainer pull docker://rocker/r-ver:4.5.1
+apptainer pull docker://rocker/r-ver:4.5.2
 ```
 
 ---
@@ -470,7 +470,7 @@ apptainer exec --containall python.sif python script.py
 #SBATCH --time=1:00:00
 
 module purge
-module load apptainer/1.4.2
+module load apptainer/1.4.5
 
 apptainer exec --cleanenv --no-home python.sif python script.py
 ```
@@ -491,7 +491,7 @@ apptainer exec --cleanenv --no-home python.sif python script.py
 #SBATCH --time=1:00:00
 
 module purge
-module load apptainer/1.4.2
+module load apptainer/1.4.5
 
 export APPTAINER_CLEANENV=true
 export APPTAINER_NO_HOME=true
@@ -539,7 +539,7 @@ apptainer exec --nv --cleanenv --no-home pytorch.sif python script.py
 #SBATCH --time=1:00:00
 
 module purge
-module load apptainer/1.4.2
+module load apptainer/1.4.5
 
 apptainer exec --nv --cleanenv --no-home pytorch.sif python script.py
 ```
@@ -578,7 +578,7 @@ srun --mpi=pmi2 -n $SLURM_NTASKS apptainer exec mpich.sif /opt/mpi_program
 #SBATCH --time=1:00:00
 
 module purge
-module load apptainer/1.4.2
+module load apptainer/1.4.5
 
 srun --mpi=pmi2 -n $SLURM_NTASKS apptainer exec mpich.sif /opt/mpi_program
 ```
@@ -697,12 +697,12 @@ Debian 13 with GCC 14.2.
 
 ```bash
 Bootstrap: docker
-From: python:3.11.13
+From: python:3.11.14
 
 
 %post
 
-pip install csvkit==2.1.0
+pip install csvkit==2.2.0
 
 
 %test
@@ -718,7 +718,7 @@ python
 
 %help
 
-Python 3.11.13 with csvkit 2.1.0.
+Python 3.11.14 with csvkit 2.2.0.
 ```
 
 ---
@@ -727,7 +727,7 @@ Python 3.11.13 with csvkit 2.1.0.
 
 ```bash
 Bootstrap: docker
-From: rocker/r-ver:4.5.1
+From: rocker/r-ver:4.5.2
 
 
 %post
@@ -748,7 +748,7 @@ R
 
 %help
 
-R 4.5.1 with data.table.
+R 4.5.2 with data.table.
 ```
 
 ---
@@ -765,10 +765,20 @@ Then build the image:
 
 ```bash
 module purge
-module load apptainer/1.4.2
+module load apptainer/1.4.5
 
 apptainer build csvkit.sif csvkit.def
 ```
+
+---
+
+## Installing software within the container
+
+- Need to get software from somewhere
+- OS package manager (e.g., APT, DNF)
+- Conda package manager
+- Spack package manager
+- Downloading source code and building
 
 ---
 
@@ -777,7 +787,7 @@ apptainer build csvkit.sif csvkit.def
 - "Optimized" typically means targeting specific hardware (e.g., CPU microarchitecture)
 - Tradeoff between portability and performance
 - Choice of base Linux OS for an image can be important for performance
-- Using Linux OS software package managers (e.g., APT, DNF) typically downloads generic binaries
+- Using OS package managers (e.g., APT, DNF) typically downloads generic binaries
 - Debian's APT provides [apt-build](https://manpages.debian.org/latest/apt-build/apt-build.1.en.html) to build packages with CPU architecture optimizations
 - [Spack](https://spack.readthedocs.io/en/latest/index.html) can be used to build and [containerize](https://spack.readthedocs.io/en/latest/containers.html) optimized software environments
 
