@@ -1,0 +1,39 @@
+Bootstrap: docker
+From: python:latest
+
+
+%files
+
+# Copy requirements file from host into /opt
+requirements.txt /opt
+
+
+%post
+
+# Update packages
+apt-get -y update
+apt-get -y upgrade
+
+# Install Python packages
+pip install -r /opt/requirements.txt
+
+# Remove unneeded files
+apt-get -y clean
+rm -rf /var/lib/apt/lists/*
+pip cache purge
+
+
+%test
+
+python --version
+pip list
+
+
+%runscript
+
+python
+
+
+%help
+
+Python with packages.
