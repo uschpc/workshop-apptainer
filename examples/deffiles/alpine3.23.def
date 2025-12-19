@@ -1,0 +1,22 @@
+Bootstrap: docker
+From: alpine:3.23
+
+
+%post
+
+# Update packages
+apk update
+apk upgrade
+
+# Remove unneeded files
+rm -rf /var/cache/apk/*
+
+
+%test
+
+cat /etc/os-release
+
+
+%help
+
+Alpine Linux 3.23.
