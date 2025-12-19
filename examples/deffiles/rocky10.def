@@ -1,0 +1,21 @@
+Bootstrap: docker
+From: rockylinux:10
+
+
+%post
+
+# Update packages
+dnf -y upgrade
+
+# Remove unneeded files
+dnf -y clean all
+
+
+%test
+
+cat /etc/os-release
+
+
+%help
+
+Rocky Linux 10.
