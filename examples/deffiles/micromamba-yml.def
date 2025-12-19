@@ -1,0 +1,40 @@
+Bootstrap: docker
+From: mambaorg/micromamba:latest
+
+
+%files
+
+# Copy yml file from host into /opt
+env.yml /opt
+
+
+%post
+
+# Update packages
+apt-get -y update
+apt-get -y upgrade
+
+# Install Conda environment from yml file
+# Default channel is conda-forge
+eval "$(micromamba shell hook -s posix)"
+micromamba env create -f /opt/env.yml
+
+# Remove unneeded files
+apt-get -y clean
+rm -rf /var/lib/apt/lists/*
+micromamba clean -yqa
+
+
+%test
+
+eval "$(micromamba shell hook -s posix)"
+micromamba activate myenv
+micromamba list
+
+
+%help
+
+Containerized Conda environment using micromamba.
+When using the container, activate with:
+    eval "$(micromamba shell hook -s posix)"
+    micromamba activate myenv
