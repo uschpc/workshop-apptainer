@@ -1,5 +1,5 @@
 Bootstrap: docker
-From: debian:latest
+From: debian:13
 
 
 %post
@@ -29,6 +29,11 @@ clang++-21 --version
 flang-21 --version
 
 
+%environment
+
+export PATH=/usr/lib/llvm-21/bin:$PATH
+
+
 %help
 
-Debian with LLVM.
+Debian 13 with LLVM 21.
