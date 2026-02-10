@@ -1,0 +1,36 @@
+Bootstrap: docker
+From: ghcr.io/prefix-dev/pixi:latest
+
+
+%files
+
+pixi.toml /pixi/pixi.toml
+
+
+%post
+
+# Update packages
+apt-get -y update
+apt-get -y upgrade
+
+# Install Pixi environment
+pixi install -m /pixi/pixi.toml
+
+# Remove unneeded files
+apt-get -y clean
+rm -rf /var/lib/apt/lists/*
+pixi clean cache -yq
+
+
+%test
+
+cd /pixi
+pixi list
+
+
+%help
+
+Containerized Pixi environment.
+The --as-is and -m options are required. For example:
+    pixi shell --as-is -m /pixi/pixi.toml
+    pixi run --as-is -m /pixi/pixi.toml python3 script.py
